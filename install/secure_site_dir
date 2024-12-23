@@ -1,0 +1,49 @@
+#!/bin/bash
+
+##
+ # This file is part of the OQILA WP project.
+ #
+ # (c) 2020 OQILA COMPUTER, LLC.
+ # @author Fazliddin Juraev
+ # 
+ # For the full copyright and license information, please view the LICENSE file
+ # that was distributed with this source code.
+ ##
+ 
+# Sets correct permissions for Laravel files and directories. If it is run 
+# without parameter, parent directory of this file is taken as project directory,
+# otherwise directory is taken from command line parameter.
+
+#-----------------------------------------------------
+if [ "$USER" == "root" ]
+then
+    echo -e "Error: Only root can not run this command.\n"
+    exit 1
+fi
+
+if [ $# -eq 0 ]
+then
+    site_path=`realpath $0`;        # get absolute path of current file
+    site_path=`dirname $site_path`; # get directory of current file
+    site_path=`dirname $site_path`; # get parent directory of current file
+else
+    site_path=$1;
+fi
+
+echo $site_path;
+
+read -p "Do you really want to secure path $site_path (y/n): " answer
+    if [ "$answer" == "y" ]
+    then
+        chown -R $USER:www-data $site_path
+        chmod -R 0750 $site_path
+        chmod g+s $site_path # All new files and subdirectories will have group of the $site_path
+        find $site_path -type d -exec chmod g+s '{}' \;
+
+        chmod g+w -R "storage/"
+        chmod g+w -R "bootstrap/"
+    else
+        exit 1;
+    fi
+
+exit 0;
